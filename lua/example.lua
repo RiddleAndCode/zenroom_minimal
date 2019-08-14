@@ -1,4 +1,5 @@
 keyring = KEYRING.new()
 keyring:generate()
-print(keyring:public():base64())
-print(keyring:private():base64())
+message = OCTET.string("hello")
+signature = keyring:sign(message)
+print(keyring:verify(message, signature))
