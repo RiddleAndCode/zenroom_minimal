@@ -1,0 +1,15 @@
+FROM sconecuratedimages/crosscompilers:ubuntu18.04
+
+RUN apt-get update && apt-get install -y ca-certificates
+
+WORKDIR build
+COPY . .
+
+RUN scone-cargo build --tests --target=x86_64-scone-linux-musl
+RUN scone-cargo build --benches --target=x86_64-scone-linux-musl --release
+
+ENV SCONE_VERSION=1
+ENV SCONE_LOG=7
+ENV SCONE_MODE=hw
+
+CMD ["scone-cargo", "test", "--target=x86_64-scone-linux-musl"]
