@@ -1,3 +1,4 @@
+use crate::module::Module;
 use rlua::{prelude::*, Context, Error, Result, Table, UserData, UserDataMethods, Value};
 use std::ops::{Deref, DerefMut};
 
@@ -82,16 +83,22 @@ impl UserData for Octet {
     }
 }
 
-pub fn build_octet_module(ctx: Context) -> Result<Table> {
-    let module = ctx.create_table()?;
-    module.set("new", ctx.create_function(|_, ()| Ok(Octet::default()))?)?;
-    module.set(
-        "base64",
-        ctx.create_function(|_, value: Value| Ok(Octet::from_base64(value)?))?,
-    )?;
-    module.set(
-        "string",
-        ctx.create_function(|_, value: Value| Ok(Octet::from_string(value)?))?,
-    )?;
-    Ok(module)
+impl Module for Octet {
+    fn module_identifier() -> &'static str {
+        "OCTET"
+    }
+
+    fn build_module(ctx: Context) -> Result<Table> {
+        let module = ctx.create_table()?;
+        module.set("new", ctx.create_function(|_, ()| Ok(Octet::default()))?)?;
+        module.set(
+            "base64",
+            ctx.create_function(|_, value: Value| Ok(Octet::from_base64(value)?))?,
+        )?;
+        module.set(
+            "string",
+            ctx.create_function(|_, value: Value| Ok(Octet::from_string(value)?))?,
+        )?;
+        Ok(module)
+    }
 }

@@ -1,3 +1,4 @@
+use crate::module::Module;
 use crate::octet::Octet;
 use ring::{rand, signature, signature::EcdsaKeyPair, signature::KeyPair};
 use rlua::{Context, Error, Result, Table, UserData, UserDataMethods};
@@ -100,14 +101,20 @@ impl UserData for Keyring {
     }
 }
 
-pub fn build_keyring_module(ctx: Context) -> Result<Table> {
-    let module = ctx.create_table()?;
-    module.set("new", ctx.create_function(|_, ()| Ok(Keyring::new()))?)?;
-    module.set(
-        "generate",
-        ctx.create_function(|_, ()| Ok(Keyring::new_generated()?))?,
-    )?;
-    Ok(module)
+impl Module for Keyring {
+    fn module_identifier() -> &'static str {
+        "KEYRING"
+    }
+
+    fn build_module(ctx: Context) -> Result<Table> {
+        let module = ctx.create_table()?;
+        module.set("new", ctx.create_function(|_, ()| Ok(Keyring::new()))?)?;
+        module.set(
+            "generate",
+            ctx.create_function(|_, ()| Ok(Keyring::new_generated()?))?,
+        )?;
+        Ok(module)
+    }
 }
 
 #[cfg(test)]
@@ -120,9 +127,7 @@ mod tests {
         let lua = Lua::new();
 
         lua.context(|lua_ctx| {
-            lua_ctx
-                .globals()
-                .set("KEYRING", build_keyring_module(lua_ctx)?)?;
+            Keyring::load_module(lua_ctx)?;
             lua_ctx.load("KEYRING.generate()").eval()
         })
         .and_then(|keyring: Keyring| {
