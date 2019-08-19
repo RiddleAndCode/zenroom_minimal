@@ -11,7 +11,9 @@ fn main() -> Result<()> {
         Json::load_module(lua_ctx)?;
         Octet::load_module(lua_ctx)?;
         Keyring::load_module(lua_ctx)?;
-        lua_ctx.load(&read_file("lua/example.lua")?).exec()?;
+        lua_ctx
+            .load(&read_file("lua/examples/signing_script.lua")?)
+            .exec()?;
         Ok(())
     })
 }

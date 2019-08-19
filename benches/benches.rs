@@ -5,7 +5,7 @@ extern crate rlua_examples;
 
 use criterion::{black_box, Criterion};
 use rlua::{Lua, Result};
-use rlua_examples::{prelude::*, Keyring, Octet};
+use rlua_examples::{prelude::*, Keyring, Octet, Zencode};
 
 fn empty_script(c: &mut Criterion) {
     c.bench_function("empty_script", move |b| {
@@ -135,15 +135,115 @@ fn preloaded_keyring_verify(c: &mut Criterion) {
     });
 }
 
+const ZENCODE_SCRIPT: &str = r#"
+Given("that my name is ''", function(name)
+    ACK.name = name
+end)
+
+Then("say hello", function()
+    OUT = "Hello, " .. ACK.name .. "!"
+end)
+
+Then("print all data", function()
+    -- print(OUT)
+end)
+
+SCRIPT = [[
+Given that my name is 'Julian'
+Then say hello
+And print all data
+]]
+"#;
+
+fn zencode(c: &mut Criterion) {
+    c.bench_function("zencode", move |b| {
+        b.iter(|| {
+            let res: Result<String> = Lua::new().context(|lua_ctx| {
+                Zencode::load_module(lua_ctx).unwrap();
+                lua_ctx.load(ZENCODE_SCRIPT).exec().unwrap();
+                lua_ctx
+                    .load(black_box(
+                        r#"
+ZEN:begin(1)
+ZEN:parse(SCRIPT)
+return ZEN:run({}, {})
+                "#,
+                    ))
+                    .eval()
+            });
+            res.unwrap();
+        })
+    });
+}
+
+fn preloaded_zencode_parse_and_run(c: &mut Criterion) {
+    let lua = Lua::new();
+    lua.context(|lua_ctx| {
+        Zencode::load_module(lua_ctx).unwrap();
+        lua_ctx.load(ZENCODE_SCRIPT).exec().unwrap();
+    });
+    c.bench_function("preloaded_zencode_parse_and_run", move |b| {
+        b.iter(|| {
+            let res: Result<String> = lua.context(|lua_ctx| {
+                lua_ctx
+                    .load(black_box(
+                        r#"
+ZEN:reset()
+ZEN:parse(SCRIPT)
+ZEN:begin(1)
+return ZEN:run({}, {})
+                "#,
+                    ))
+                    .eval()
+            });
+            res.unwrap();
+        })
+    });
+}
+
+fn preloaded_zencode_run(c: &mut Criterion) {
+    let lua = Lua::new();
+    lua.context(|lua_ctx| {
+        Zencode::load_module(lua_ctx).unwrap();
+        lua_ctx.load(ZENCODE_SCRIPT).exec().unwrap();
+        lua_ctx
+            .load(
+                r#"
+ZEN:parse(SCRIPT)
+"#,
+            )
+            .exec()
+            .unwrap();
+    });
+    c.bench_function("preloaded_zencode_run", move |b| {
+        b.iter(|| {
+            let res: Result<String> = lua.context(|lua_ctx| {
+                lua_ctx
+                    .load(black_box(
+                        r#"
+ZEN:begin(1)
+return ZEN:run({}, {})
+                "#,
+                    ))
+                    .eval()
+            });
+            res.unwrap();
+        })
+    });
+}
+
 criterion_group!(
     benches,
     empty_script,
-    preload_lua_empty_script,
+    preloaded_empty_script,
     keyring_generate,
     preloaded_keyring_generate,
     keyring_sign,
     preloaded_keyring_sign,
     keyring_verify,
     preloaded_keyring_verify,
+    zencode,
+    preloaded_zencode_parse_and_run,
+    preloaded_zencode_run,
 );
 criterion_main!(benches);

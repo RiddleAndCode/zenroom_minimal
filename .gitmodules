@@ -1,0 +1,3 @@
+[submodule "lua/zencode"]
+	path = lua/zencode
+	url = git@github.com:riddleandcode/zencode-core
