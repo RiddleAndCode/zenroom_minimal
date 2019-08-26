@@ -1,5 +1,5 @@
-use crate::module::Module;
-use rlua::{prelude::*, Context, Error, Result, Table, Value};
+use super::{DefaultModule, Module};
+use rlua::{prelude::*, Context, Error, Result, Value};
 
 pub struct Json;
 
@@ -27,14 +27,16 @@ impl Json {
 }
 
 impl Module for Json {
-    fn module_identifier() -> &'static str {
-        "JSON"
-    }
+    const IDENTIFIER: &'static str = "json";
 
-    fn build_module(ctx: Context) -> Result<Table> {
+    fn build_module(ctx: Context) -> Result<Value> {
         let module = ctx.create_table()?;
         module.set("encode", ctx.create_function(Json::encode)?)?;
         module.set("decode", ctx.create_function(Json::decode)?)?;
-        Ok(module)
+        Ok(Value::Table(module))
     }
+}
+
+impl DefaultModule for Json {
+    const GLOBAL_VAR: &'static str = "JSON";
 }

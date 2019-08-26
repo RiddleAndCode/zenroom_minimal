@@ -1,5 +1,5 @@
-use crate::module::Module;
-use rlua::{prelude::*, Context, Error, Result, Table, UserData, UserDataMethods, Value};
+use super::{DefaultModule, Module};
+use rlua::{prelude::*, Context, Error, Result, UserData, UserDataMethods, Value};
 use std::ops::{Deref, DerefMut};
 
 #[derive(Clone, Debug, Default)]
@@ -84,11 +84,9 @@ impl UserData for Octet {
 }
 
 impl Module for Octet {
-    fn module_identifier() -> &'static str {
-        "OCTET"
-    }
+    const IDENTIFIER: &'static str = "octet";
 
-    fn build_module(ctx: Context) -> Result<Table> {
+    fn build_module(ctx: Context) -> Result<Value> {
         let module = ctx.create_table()?;
         module.set("new", ctx.create_function(|_, ()| Ok(Octet::default()))?)?;
         module.set(
@@ -99,6 +97,10 @@ impl Module for Octet {
             "string",
             ctx.create_function(|_, value: Value| Ok(Octet::from_string(value)?))?,
         )?;
-        Ok(module)
+        Ok(Value::Table(module))
     }
+}
+
+impl DefaultModule for Octet {
+    const GLOBAL_VAR: &'static str = "OCTET";
 }

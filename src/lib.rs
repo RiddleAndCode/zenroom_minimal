@@ -7,19 +7,13 @@ extern crate rlua;
 extern crate rlua_serde;
 extern crate untrusted;
 
-mod json;
-mod keyring;
 mod module;
-mod octet;
-pub mod utils;
-mod zencode;
+mod runtime;
+pub mod util;
 
-pub use json::Json;
-pub use keyring::Keyring;
-pub use module::Module;
-pub use octet::Octet;
-pub use zencode::Zencode;
+pub use module::{DefaultModule, Importer, Json, Keyring, Module, Octet, Zencode};
+pub use runtime::DefaultRuntime;
 
 pub mod prelude {
-    pub use crate::module::Module;
+    pub use crate::module::{DefaultModule, Module};
 }

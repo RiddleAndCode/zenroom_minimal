@@ -36,7 +36,7 @@ fn keyring_generate(c: &mut Criterion) {
     c.bench_function("keyring_generate", move |b| {
         b.iter(|| {
             let res: Result<Keyring> = Lua::new().context(|lua_ctx| {
-                Keyring::load_module(lua_ctx)?;
+                Keyring::import_module(lua_ctx)?;
                 lua_ctx.load(black_box("KEYRING.generate()")).eval()
             });
             res.unwrap();
@@ -46,7 +46,7 @@ fn keyring_generate(c: &mut Criterion) {
 
 fn preloaded_keyring_generate(c: &mut Criterion) {
     let lua = Lua::new();
-    lua.context(Keyring::load_module).unwrap();
+    lua.context(Keyring::import_module).unwrap();
     c.bench_function("preloaded_keyring_generate", move |b| {
         b.iter(|| {
             let res: Result<Keyring> =
@@ -159,7 +159,7 @@ fn zencode(c: &mut Criterion) {
     c.bench_function("zencode", move |b| {
         b.iter(|| {
             let res: Result<String> = Lua::new().context(|lua_ctx| {
-                Zencode::load_module(lua_ctx).unwrap();
+                Zencode::import_module(lua_ctx).unwrap();
                 lua_ctx.load(ZENCODE_SCRIPT).exec().unwrap();
                 lua_ctx
                     .load(black_box(
@@ -179,7 +179,7 @@ return ZEN:run({}, {})
 fn preloaded_zencode_parse_and_run(c: &mut Criterion) {
     let lua = Lua::new();
     lua.context(|lua_ctx| {
-        Zencode::load_module(lua_ctx).unwrap();
+        Zencode::import_module(lua_ctx).unwrap();
         lua_ctx.load(ZENCODE_SCRIPT).exec().unwrap();
     });
     c.bench_function("preloaded_zencode_parse_and_run", move |b| {
@@ -204,7 +204,7 @@ return ZEN:run({}, {})
 fn preloaded_zencode_run(c: &mut Criterion) {
     let lua = Lua::new();
     lua.context(|lua_ctx| {
-        Zencode::load_module(lua_ctx).unwrap();
+        Zencode::import_module(lua_ctx).unwrap();
         lua_ctx.load(ZENCODE_SCRIPT).exec().unwrap();
         lua_ctx
             .load(
