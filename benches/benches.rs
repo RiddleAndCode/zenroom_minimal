@@ -1,11 +1,11 @@
 #[macro_use]
 extern crate criterion;
 extern crate rlua;
-extern crate rlua_examples;
+extern crate zenroom_minimal;
 
 use criterion::{black_box, Criterion};
 use rlua::{Lua, Result};
-use rlua_examples::{prelude::*, Keyring, KeyringClass, Octet, Zencode};
+use zenroom_minimal::{prelude::*, Keyring, KeyringClass, Octet, Zencode};
 
 fn empty_script(c: &mut Criterion) {
     c.bench_function("empty_script", move |b| {

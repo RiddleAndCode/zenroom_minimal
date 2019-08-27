@@ -1,8 +1,8 @@
 extern crate rlua;
-extern crate rlua_examples;
+extern crate zenroom_minimal;
 
 use rlua::{Lua, Result};
-use rlua_examples::{prelude::*, util::read_file, Zencode};
+use zenroom_minimal::{prelude::*, util::read_file, Zencode};
 
 fn main() -> Result<()> {
     let lua = Lua::new();

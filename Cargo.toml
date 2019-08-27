@@ -1,5 +1,5 @@
 [package]
-name = "rlua-examples"
+name = "zenroom_minimal"
 version = "0.1.0"
 authors = ["Julian Popescu <jpopesculian@gmail.com>"]
 edition = "2018"

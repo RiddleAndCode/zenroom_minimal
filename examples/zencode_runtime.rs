@@ -1,8 +1,8 @@
 extern crate rlua;
-extern crate rlua_examples;
+extern crate zenroom_minimal;
 
 use rlua::Result;
-use rlua_examples::{
+use zenroom_minimal::{
     prelude::*, util::read_file, FileScenarioLinker, ScenarioLoader, ZencodeRuntime,
 };
 
