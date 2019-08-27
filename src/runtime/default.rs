@@ -34,7 +34,7 @@ impl DefaultRuntime {
 }
 
 impl Runtime for DefaultRuntime {
-    fn load(&mut self, source: &str) -> Result<&Self> {
+    fn load(&mut self, source: &str) -> Result<&mut Self> {
         self.source = source.to_owned();
         Ok(self)
     }

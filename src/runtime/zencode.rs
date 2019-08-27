@@ -39,10 +39,22 @@ impl ZencodeRuntime {
             keys: "{}".to_string(),
         }
     }
+
+    pub fn load_data(&mut self, data: &str) -> Result<&mut Self> {
+        // TODO validation
+        self.data = data.to_owned();
+        Ok(self)
+    }
+
+    pub fn load_keys(&mut self, keys: &str) -> Result<&mut Self> {
+        // TODO validation
+        self.keys = keys.to_owned();
+        Ok(self)
+    }
 }
 
 impl Runtime for ZencodeRuntime {
-    fn load(&mut self, source: &str) -> Result<&Self> {
+    fn load(&mut self, source: &str) -> Result<&mut Self> {
         self.lua.context(|ctx| {
             ctx.load(&format!(
                 r#"
@@ -58,6 +70,7 @@ ZEN:parse(script)
     }
 
     fn eval(&self) -> Result<Option<String>> {
+        // TODO encoding of data and keys
         self.lua.context(|ctx| {
             ctx.load(&format!(
                 "return JSON.encode(ZEN:run({}, {}))",
@@ -91,7 +104,7 @@ mod tests {
     }
 
     #[test]
-    fn file_scenario_load() {
+    fn helloworld() {
         // TODO make this windows compatible
         let loader = ScenarioLoader::new(FileScenarioLinker::new("/tmp"));
         let mut runtime = ZencodeRuntime::new(loader);
@@ -131,6 +144,54 @@ And print all data
             .eval()
             .unwrap();
         assert_eq!(Some("\"Hello, Julian!\"".to_string()), res);
+        remove_file(filename).unwrap();
+    }
+
+    #[test]
+    fn addition() {
+        // TODO make this windows compatible
+        let loader = ScenarioLoader::new(FileScenarioLinker::new("/tmp"));
+        let mut runtime = ZencodeRuntime::new(loader);
+        let scenario = random_scenario(10);
+        let filename = format!("/tmp/zencode_{}.lua", scenario);
+        File::create(&filename)
+            .and_then(|mut file| {
+                file.write_all(
+                    r#"
+Given("that I want to add '' with ''", function(a, b)
+    ACK.left = IN[a]
+    ACK.right = IN[b]
+end)
+
+Then("do addition", function()
+    OUT = ACK.left + ACK.right
+end)
+
+Then("print all data", function()
+    -- print(OUT)
+end)
+"#
+                    .as_ref(),
+                )
+            })
+            .unwrap();
+        let data = "{a = 1, b = 2}";
+        let res = runtime
+            .load_data(data)
+            .unwrap()
+            .load(&format!(
+                r#"
+Scenario '{}'
+Given that I want to add 'a' with 'b'
+Then do addition
+And print all data
+        "#,
+                scenario
+            ))
+            .unwrap()
+            .eval()
+            .unwrap();
+        assert_eq!(Some("3".to_string()), res);
         remove_file(filename).unwrap();
     }
 }

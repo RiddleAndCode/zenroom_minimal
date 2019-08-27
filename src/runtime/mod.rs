@@ -7,6 +7,6 @@ pub use zencode::ZencodeRuntime;
 use rlua::Result;
 
 pub trait Runtime {
-    fn load(&mut self, source: &str) -> Result<&Self>;
+    fn load(&mut self, source: &str) -> Result<&mut Self>;
     fn eval(&self) -> Result<Option<String>>;
 }
