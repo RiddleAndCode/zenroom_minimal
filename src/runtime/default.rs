@@ -18,7 +18,10 @@ impl Default for DefaultRuntime {
         let lua = Lua::new_with(libs);
 
         let runtime = DefaultRuntime(lua);
-        runtime.lua().context(Importer::import_module).unwrap();
+        runtime
+            .lua()
+            .context(|ctx| Importer::import_module(ctx))
+            .unwrap();
         runtime
     }
 }

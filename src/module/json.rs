@@ -1,6 +1,7 @@
 use super::{DefaultModule, Module};
 use rlua::{prelude::*, Context, Error, Result, Value};
 
+#[derive(Default)]
 pub struct Json;
 
 impl Json {
@@ -29,7 +30,7 @@ impl Json {
 impl Module for Json {
     const IDENTIFIER: &'static str = "json";
 
-    fn build_module(ctx: Context) -> Result<Value> {
+    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx.create_table()?;
         module.set("encode", ctx.create_function(Json::encode)?)?;
         module.set("decode", ctx.create_function(Json::decode)?)?;

@@ -11,7 +11,9 @@ mod module;
 mod runtime;
 pub mod util;
 
-pub use module::{DefaultModule, Importer, Json, Keyring, Module, Octet, Zencode};
+pub use module::{
+    DefaultModule, Importer, Json, Keyring, KeyringClass, Module, Octet, OctetClass, Zencode,
+};
 pub use runtime::DefaultRuntime;
 
 pub mod prelude {

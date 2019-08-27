@@ -5,6 +5,9 @@ use std::ops::{Deref, DerefMut};
 #[derive(Clone, Debug, Default)]
 pub struct Octet(Vec<u8>);
 
+#[derive(Default)]
+pub struct OctetClass;
+
 impl Octet {
     pub fn new(bytes: Vec<u8>) -> Self {
         Octet(bytes)
@@ -83,10 +86,10 @@ impl UserData for Octet {
     }
 }
 
-impl Module for Octet {
+impl Module for OctetClass {
     const IDENTIFIER: &'static str = "octet";
 
-    fn build_module(ctx: Context) -> Result<Value> {
+    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx.create_table()?;
         module.set("new", ctx.create_function(|_, ()| Ok(Octet::default()))?)?;
         module.set(
@@ -101,6 +104,6 @@ impl Module for Octet {
     }
 }
 
-impl DefaultModule for Octet {
+impl DefaultModule for OctetClass {
     const GLOBAL_VAR: &'static str = "OCTET";
 }

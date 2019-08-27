@@ -8,6 +8,9 @@ pub struct Keyring {
     private: Octet,
 }
 
+#[derive(Default)]
+pub struct KeyringClass;
+
 impl Keyring {
     pub fn new() -> Self {
         Keyring::default()
@@ -100,10 +103,10 @@ impl UserData for Keyring {
     }
 }
 
-impl Module for Keyring {
+impl Module for KeyringClass {
     const IDENTIFIER: &'static str = "keyring";
 
-    fn build_module(ctx: Context) -> Result<Value> {
+    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx.create_table()?;
         module.set("new", ctx.create_function(|_, ()| Ok(Keyring::new()))?)?;
         module.set(
@@ -114,7 +117,7 @@ impl Module for Keyring {
     }
 }
 
-impl DefaultModule for Keyring {
+impl DefaultModule for KeyringClass {
     const GLOBAL_VAR: &'static str = "KEYRING";
 }
 
@@ -128,7 +131,7 @@ mod tests {
         let lua = Lua::new();
 
         lua.context(|lua_ctx| {
-            Keyring::import_module(lua_ctx)?;
+            KeyringClass::import_module(lua_ctx)?;
             lua_ctx.load("KEYRING.generate()").eval()
         })
         .and_then(|keyring: Keyring| {

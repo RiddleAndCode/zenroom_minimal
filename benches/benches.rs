@@ -5,7 +5,7 @@ extern crate rlua_examples;
 
 use criterion::{black_box, Criterion};
 use rlua::{Lua, Result};
-use rlua_examples::{prelude::*, Keyring, Octet, Zencode};
+use rlua_examples::{prelude::*, Keyring, KeyringClass, Octet, Zencode};
 
 fn empty_script(c: &mut Criterion) {
     c.bench_function("empty_script", move |b| {
@@ -36,7 +36,7 @@ fn keyring_generate(c: &mut Criterion) {
     c.bench_function("keyring_generate", move |b| {
         b.iter(|| {
             let res: Result<Keyring> = Lua::new().context(|lua_ctx| {
-                Keyring::import_module(lua_ctx)?;
+                KeyringClass::import_module(lua_ctx)?;
                 lua_ctx.load(black_box("KEYRING.generate()")).eval()
             });
             res.unwrap();
@@ -46,7 +46,7 @@ fn keyring_generate(c: &mut Criterion) {
 
 fn preloaded_keyring_generate(c: &mut Criterion) {
     let lua = Lua::new();
-    lua.context(Keyring::import_module).unwrap();
+    lua.context(KeyringClass::import_module).unwrap();
     c.bench_function("preloaded_keyring_generate", move |b| {
         b.iter(|| {
             let res: Result<Keyring> =

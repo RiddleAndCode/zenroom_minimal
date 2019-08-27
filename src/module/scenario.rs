@@ -1,0 +1,145 @@
+use super::{DefaultModule, Module};
+use crate::util::read_file;
+use rlua::{Context, Error, Result, Value};
+use std::path::{Path, PathBuf};
+
+pub trait ScenarioLinker {
+    fn read_scenario(&self, scenario: &str) -> Result<String>;
+}
+
+#[derive(Clone)]
+pub struct FileScenarioLinker(PathBuf);
+
+impl FileScenarioLinker {
+    pub fn new<T: AsRef<Path>>(path: T) -> Self {
+        // TODO vector of paths?
+        FileScenarioLinker(path.as_ref().to_path_buf())
+    }
+}
+
+impl ScenarioLinker for FileScenarioLinker {
+    fn read_scenario(&self, scenario: &str) -> Result<String> {
+        // TODO prefix as option
+        read_file(self.0.join(format!("zencode_{}.lua", scenario)))
+    }
+}
+
+impl Default for FileScenarioLinker {
+    fn default() -> Self {
+        FileScenarioLinker::new(".")
+    }
+}
+
+#[derive(Clone)]
+pub struct ScenarioLoader<L: ScenarioLinker>(L);
+
+impl<L> ScenarioLoader<L>
+where
+    L: ScenarioLinker,
+{
+    fn new(ld: L) -> Self {
+        ScenarioLoader(ld)
+    }
+
+    fn load_scenario<'lua>(&self, ctx: Context<'lua>, value: Value<'lua>) -> Result<()> {
+        let name = match value {
+            Value::String(s) => s,
+            _ => {
+                return Err(Error::RuntimeError(
+                    "module name must be a string".to_string(),
+                ))
+            }
+        };
+        let scenario = self.0.read_scenario(name.to_str()?)?;
+        ctx.load(&scenario).exec()
+    }
+}
+
+impl Default for ScenarioLoader<FileScenarioLinker> {
+    fn default() -> Self {
+        ScenarioLoader::new(FileScenarioLinker::default())
+    }
+}
+
+impl<L> Module for ScenarioLoader<L>
+where
+    L: 'static + ScenarioLinker + Sync + Send + Clone,
+{
+    const IDENTIFIER: &'static str = "load_scenario";
+
+    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
+        let loader = self.clone();
+        let func = ctx.create_function(move |ctx, val| Ok(loader.load_scenario(ctx, val)?))?;
+        Ok(Value::Function(func))
+    }
+}
+
+impl DefaultModule for ScenarioLoader<FileScenarioLinker> {
+    const GLOBAL_VAR: &'static str = "load_scenario";
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::{prelude::*, thread_rng};
+    use rlua::{Lua, Result};
+    use std::fs::File;
+    use std::io::prelude::*;
+
+    #[derive(Clone, Debug)]
+    struct DummyScenarioLinker;
+
+    impl ScenarioLinker for DummyScenarioLinker {
+        fn read_scenario(&self, scenario: &str) -> Result<String> {
+            Ok(format!("_G['loaded_scenario'] = '{}'", scenario))
+        }
+    }
+
+    fn random_scenario(len: usize) -> String {
+        thread_rng()
+            .sample_iter(rand::distributions::Alphanumeric)
+            .take(len)
+            .collect()
+    }
+
+    #[test]
+    fn dummy_load() -> Result<()> {
+        let lua = Lua::new();
+        let loader = ScenarioLoader::new(DummyScenarioLinker);
+        let scenario = "hello";
+        lua.context(|ctx| {
+            ctx.globals().set("scenario", loader.build_module(ctx)?)?;
+            ctx.load(&format!("scenario('{}')", scenario)).exec()?;
+            ctx.load("return _G['loaded_scenario']").eval()
+        })
+        .and_then(|res: std::string::String| {
+            assert_eq!(res, scenario);
+            Ok(())
+        })
+    }
+
+    #[test]
+    fn file_scenario_load() -> Result<()> {
+        // TODO make this windows compatible
+        let lua = Lua::new();
+        let linker = FileScenarioLinker::new("/tmp");
+        let loader = ScenarioLoader::new(linker);
+
+        let scenario = random_scenario(10);
+        File::create(format!("/tmp/zencode_{}.lua", scenario))
+            .and_then(|mut file| {
+                file.write_all(format!("_G['loaded_scenario'] = '{}'", scenario).as_ref())
+            })
+            .unwrap();
+
+        lua.context(|ctx| {
+            ctx.globals().set("scenario", loader.build_module(ctx)?)?;
+            ctx.load(&format!("scenario('{}')", scenario)).exec()?;
+            ctx.load("return _G['loaded_scenario']").eval()
+        })
+        .and_then(|res: std::string::String| {
+            assert_eq!(res, scenario);
+            Ok(())
+        })
+    }
+}

@@ -4,12 +4,13 @@ use rlua::{Context, Result, Value};
 use std::env;
 use std::path::Path;
 
+#[derive(Default)]
 pub struct Zencode;
 
 impl Module for Zencode {
     const IDENTIFIER: &'static str = "zencode";
 
-    fn build_module(ctx: Context) -> Result<Value> {
+    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         lazy_static! {
             static ref ZENCODE_SRC: String = {
                 let file = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
