@@ -30,7 +30,7 @@ impl<'lua> Importer {
 impl Module for Importer {
     const IDENTIFIER: &'static str = "import";
 
-    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
+    fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         Ok(Value::Function(ctx.create_function(Importer::import)?))
     }
 }

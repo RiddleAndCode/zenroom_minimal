@@ -106,7 +106,7 @@ impl UserData for Keyring {
 impl Module for KeyringClass {
     const IDENTIFIER: &'static str = "keyring";
 
-    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
+    fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx.create_table()?;
         module.set("new", ctx.create_function(|_, ()| Ok(Keyring::new()))?)?;
         module.set(

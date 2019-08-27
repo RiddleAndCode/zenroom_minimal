@@ -30,7 +30,7 @@ impl Json {
 impl Module for Json {
     const IDENTIFIER: &'static str = "json";
 
-    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
+    fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx.create_table()?;
         module.set("encode", ctx.create_function(Json::encode)?)?;
         module.set("decode", ctx.create_function(Json::decode)?)?;

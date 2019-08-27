@@ -11,11 +11,12 @@ pub use importer::Importer;
 pub use json::Json;
 pub use keyring::{Keyring, KeyringClass};
 pub use octet::{Octet, OctetClass};
+pub use scenario::{FileScenarioLinker, ScenarioLinker, ScenarioLoader};
 pub use zencode::Zencode;
 
 use rlua::{Context, Result, Value};
 
 pub trait Module {
     const IDENTIFIER: &'static str;
-    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>>;
+    fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>>;
 }

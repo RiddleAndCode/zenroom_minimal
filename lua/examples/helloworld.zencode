@@ -1,0 +1,4 @@
+Scenario 'hello'
+Given that my name is 'Julian'
+Then say hello
+And print all data

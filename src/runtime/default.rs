@@ -1,9 +1,11 @@
 use super::Runtime;
-use crate::DefaultModule;
-use crate::Importer;
+use crate::{prelude::*, Importer};
 use rlua::{Lua, Result, StdLib};
 
-pub struct DefaultRuntime(Lua);
+pub struct DefaultRuntime {
+    lua: Lua,
+    source: String,
+}
 
 impl Default for DefaultRuntime {
     fn default() -> Self {
@@ -16,31 +18,30 @@ impl Default for DefaultRuntime {
         libs.insert(StdLib::UTF8);
         libs.insert(StdLib::MATH);
         let lua = Lua::new_with(libs);
-
-        let runtime = DefaultRuntime(lua);
-        runtime
-            .lua()
-            .context(|ctx| Importer::import_module(ctx))
-            .unwrap();
-        runtime
+        DefaultRuntime::new(lua)
     }
 }
 
 impl DefaultRuntime {
-    pub fn new() -> Self {
-        DefaultRuntime::default()
-    }
-
-    #[inline]
-    fn lua(&self) -> &Lua {
-        &self.0
+    pub fn new(lua: Lua) -> Self {
+        let runtime = DefaultRuntime {
+            lua,
+            source: "".to_string(),
+        };
+        runtime.lua.context(Importer::import_module).unwrap();
+        runtime
     }
 }
 
 impl Runtime for DefaultRuntime {
-    fn run(&self, source: &str) -> Result<Option<String>> {
-        self.lua()
-            .context(|lua_ctx| lua_ctx.load(&source).eval::<Option<String>>())
+    fn load(&mut self, source: &str) -> Result<&Self> {
+        self.source = source.to_owned();
+        Ok(self)
+    }
+
+    fn eval(&self) -> Result<Option<String>> {
+        self.lua
+            .context(|lua_ctx| lua_ctx.load(&self.source).eval::<Option<String>>())
     }
 }
 
@@ -50,8 +51,8 @@ mod tests {
 
     #[test]
     fn empty() {
-        let runtime = DefaultRuntime::new();
-        let res = runtime.run("");
+        let mut runtime = DefaultRuntime::default();
+        let res = runtime.load("").unwrap().eval();
         match res {
             Ok(None) => (),
             _ => panic!("empty script should return none"),
@@ -60,8 +61,8 @@ mod tests {
 
     #[test]
     fn require_fails() {
-        let runtime = DefaultRuntime::new();
-        let res = runtime.run("return require");
+        let mut runtime = DefaultRuntime::default();
+        let res = runtime.load("return require").unwrap().eval();
         match res {
             Ok(None) => (),
             _ => panic!("require should be none"),
@@ -70,14 +71,16 @@ mod tests {
 
     #[test]
     fn import() {
-        let runtime = DefaultRuntime::new();
+        let mut runtime = DefaultRuntime::default();
         let res = runtime
-            .run(
+            .load(
                 r#"
 JSON = import('json')
 return JSON.encode({a = 1})
         "#,
             )
+            .unwrap()
+            .eval()
             .unwrap();
         assert_eq!(res, Some("{\"a\":1}".to_string()));
     }

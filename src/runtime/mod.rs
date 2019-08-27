@@ -1,9 +1,12 @@
 mod default;
+mod zencode;
 
 pub use default::DefaultRuntime;
+pub use zencode::ZencodeRuntime;
 
 use rlua::Result;
 
 pub trait Runtime {
-    fn run(&self, source: &str) -> Result<Option<String>>;
+    fn load(&mut self, source: &str) -> Result<&Self>;
+    fn eval(&self) -> Result<Option<String>>;
 }

@@ -12,10 +12,13 @@ mod runtime;
 pub mod util;
 
 pub use module::{
-    DefaultModule, Importer, Json, Keyring, KeyringClass, Module, Octet, OctetClass, Zencode,
+    DefaultModule, FileScenarioLinker, Importer, Json, Keyring, KeyringClass, Module, Octet,
+    OctetClass, ScenarioLinker, ScenarioLoader, Zencode,
 };
-pub use runtime::DefaultRuntime;
+pub use runtime::{DefaultRuntime, ZencodeRuntime};
 
 pub mod prelude {
+    pub use crate::module::ScenarioLinker;
     pub use crate::module::{DefaultModule, Module};
+    pub use crate::runtime::Runtime;
 }

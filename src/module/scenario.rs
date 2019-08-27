@@ -26,6 +26,7 @@ impl ScenarioLinker for FileScenarioLinker {
 
 impl Default for FileScenarioLinker {
     fn default() -> Self {
+        // TODO cwd?
         FileScenarioLinker::new(".")
     }
 }
@@ -37,7 +38,7 @@ impl<L> ScenarioLoader<L>
 where
     L: ScenarioLinker,
 {
-    fn new(ld: L) -> Self {
+    pub fn new(ld: L) -> Self {
         ScenarioLoader(ld)
     }
 
@@ -67,9 +68,8 @@ where
 {
     const IDENTIFIER: &'static str = "load_scenario";
 
-    fn build_module<'lua>(&self, ctx: Context<'lua>) -> Result<Value<'lua>> {
-        let loader = self.clone();
-        let func = ctx.create_function(move |ctx, val| Ok(loader.load_scenario(ctx, val)?))?;
+    fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
+        let func = ctx.create_function(move |ctx, val| Ok(self.load_scenario(ctx, val)?))?;
         Ok(Value::Function(func))
     }
 }
@@ -83,7 +83,7 @@ mod tests {
     use super::*;
     use rand::{prelude::*, thread_rng};
     use rlua::{Lua, Result};
-    use std::fs::File;
+    use std::fs::{remove_file, File};
     use std::io::prelude::*;
 
     #[derive(Clone, Debug)]
@@ -126,7 +126,8 @@ mod tests {
         let loader = ScenarioLoader::new(linker);
 
         let scenario = random_scenario(10);
-        File::create(format!("/tmp/zencode_{}.lua", scenario))
+        let filename = format!("/tmp/zencode_{}.lua", scenario);
+        File::create(&filename)
             .and_then(|mut file| {
                 file.write_all(format!("_G['loaded_scenario'] = '{}'", scenario).as_ref())
             })
@@ -139,6 +140,7 @@ mod tests {
         })
         .and_then(|res: std::string::String| {
             assert_eq!(res, scenario);
+            remove_file(filename).unwrap();
             Ok(())
         })
     }
