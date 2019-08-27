@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 extern crate base64;
 extern crate ring;
 extern crate rlua;
