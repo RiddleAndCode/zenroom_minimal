@@ -1,25 +1,20 @@
 use super::{DefaultModule, Module};
-use crate::util::read_file;
 use rlua::{Context, Result, Value};
-use std::env;
-use std::path::Path;
 
 #[derive(Default)]
 pub struct Zencode;
+
+static ZENCODE_SRC: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/lua/zencode/src/zencode.lua"
+));
 
 impl Module for Zencode {
     const IDENTIFIER: &'static str = "zencode";
 
     fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
-        lazy_static! {
-            static ref ZENCODE_SRC: String = {
-                let file = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
-                    .join("lua/zencode/src/zencode.lua");
-                read_file(file).unwrap()
-            };
-        }
         let module = ctx
-            .load(&ZENCODE_SRC.to_string())
+            .load(ZENCODE_SRC)
             .set_name("Zencode::build_module")?
             .eval()?;
         Ok(Value::Table(module))
