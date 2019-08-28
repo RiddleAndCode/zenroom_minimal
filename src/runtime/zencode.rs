@@ -17,7 +17,7 @@ impl Default for ZencodeRuntime {
 impl ZencodeRuntime {
     pub fn new<L>(loader: ScenarioLoader<L>) -> Self
     where
-        L: 'static + ScenarioLinker + Sync + Send + Clone,
+        L: 'static + ScenarioLinker + Sync + Send,
     {
         let lua = Lua::default();
         lua.context(|ctx| {

@@ -17,8 +17,15 @@ pub use module::{
 };
 pub use runtime::{DefaultRuntime, ZencodeRuntime};
 
+// TODO add own error types
+pub use rlua::Error;
+pub use rlua::Result;
+
 pub mod prelude {
     pub use crate::module::ScenarioLinker;
     pub use crate::module::{DefaultModule, Module};
     pub use crate::runtime::Runtime;
+
+    // TODO abstract away rlua public traits?
+    pub use rlua::prelude::*;
 }

@@ -64,7 +64,7 @@ impl Default for ScenarioLoader<FileScenarioLinker> {
 
 impl<L> Module for ScenarioLoader<L>
 where
-    L: 'static + ScenarioLinker + Sync + Send + Clone,
+    L: 'static + ScenarioLinker + Sync + Send,
 {
     const IDENTIFIER: &'static str = "load_scenario";
 
