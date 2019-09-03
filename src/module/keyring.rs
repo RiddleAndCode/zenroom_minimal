@@ -1,6 +1,6 @@
 use super::{DefaultModule, Module, Octet};
 use ring::{rand, signature, signature::EcdsaKeyPair, signature::KeyPair};
-use rlua::{Context, Error, Result, UserData, UserDataMethods, Value};
+use rlua::{Context, Error, Result, UserData, UserDataMethods, Value, Variadic};
 
 #[derive(Clone, Debug, Default)]
 pub struct Keyring {
@@ -78,24 +78,36 @@ impl Keyring {
         &self.private
     }
 
-    pub fn set_public(&mut self, public: Octet) -> Result<()> {
+    pub fn set_public(&mut self, public: Octet) -> Result<Octet> {
         // TODO validate input and see if it matches private
-        self.public = public;
-        Ok(())
+        self.public = public.clone();
+        Ok(public)
     }
 
-    pub fn set_private(&mut self, private: Octet) -> Result<()> {
-        self.private = private;
-        self.generate_private()?;
-        Ok(())
+    pub fn set_private(&mut self, private: Octet) -> Result<Octet> {
+        self.private = private.clone();
+        self.generate_public()?;
+        Ok(private)
     }
 }
 
 impl UserData for Keyring {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_method_mut("generate", |_, this, ()| Ok(this.generate()?));
-        methods.add_method("public", |_, this, ()| Ok(this.public().clone()));
-        methods.add_method("private", |_, this, ()| Ok(this.private().clone()));
+        methods.add_method_mut("public", |_, this, vals: Variadic<Octet>| {
+            if vals.len() > 0 {
+                this.set_public(vals[0].clone())
+            } else {
+                Ok(this.public().clone())
+            }
+        });
+        methods.add_method_mut("private", |_, this, vals: Variadic<Octet>| {
+            if vals.len() > 0 {
+                this.set_private(vals[0].clone())
+            } else {
+                Ok(this.private().clone())
+            }
+        });
         methods.add_method("sign", |_, this, message| Ok(this.sign(&message)));
         methods.add_method("verify", |_, this, (message, signature)| {
             Ok(this.verify(&message, &signature))
