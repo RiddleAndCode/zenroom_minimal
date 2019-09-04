@@ -2,20 +2,37 @@ use super::{DefaultModule, Module, Octet};
 use ring::{rand, signature, signature::EcdsaKeyPair, signature::KeyPair};
 use rlua::{Context, Error, Result, UserData, UserDataMethods, Value, Variadic};
 
+/// A public / private Keypair. At the moment, this Keypair is only configured
+/// for the NIST256 curve. This may change in the future however.
+///
+/// After instantiating from the [`KeyringClass`] Module, the lua variable
+/// exposes multiple instance methods:
+/// * `keyring:generate()`: Generate a new private / public key pair
+/// * `keyring:public(<optional Octet>)`: Public key getter / setter
+/// * `keyring:private(<optional Octet>)`: Private key getter / setter
+/// * `keyring:sign(<message Octet>)`: Sign a message. Returns Octet with signature bytes
+/// * `keyring:verify(<message Octet>, <signature Octet>)`: Verify a signature and message
 #[derive(Clone, Debug, Default)]
 pub struct Keyring {
     public: Octet,
     private: Octet,
 }
 
+/// A [`Keyring`] factory
+///
+/// Exposes a default `KEYRING` module in Lua
+/// * `KEYRING.new()`: Create a new default Keyring (blank)
+/// * `KEYRING.generated()`: Create a new Keyring and generate a private / public keypair
 #[derive(Default)]
 pub struct KeyringClass;
 
 impl Keyring {
+    /// Create new blank Keyring
     pub fn new() -> Self {
         Keyring::default()
     }
 
+    /// Create a new Keyring and generate a private / public keypair
     pub fn new_generated() -> Result<Self> {
         let mut keyring = Keyring::new();
         keyring.generate()?;
@@ -43,6 +60,7 @@ impl Keyring {
         Ok(())
     }
 
+    /// Sign a message with the private key
     pub fn sign(&self, message: &Octet) -> Result<Octet> {
         let rng = rand::SystemRandom::new();
         Ok(self
@@ -54,6 +72,7 @@ impl Keyring {
             .into())
     }
 
+    /// Verify the signature signed by the public key
     pub fn verify(&self, message: &Octet, signature: &Octet) -> bool {
         signature::verify(
             &signature::ECDSA_P256_SHA256_FIXED,
@@ -64,26 +83,31 @@ impl Keyring {
         .is_ok()
     }
 
+    /// Generate new private / public keypair
     pub fn generate(&mut self) -> Result<()> {
         self.generate_private()?;
         self.generate_public()?;
         Ok(())
     }
 
+    /// Get the public key
     pub fn public(&self) -> &Octet {
         &self.public
     }
 
+    /// Get the private key
     pub fn private(&self) -> &Octet {
         &self.private
     }
 
+    /// Set the public key
     pub fn set_public(&mut self, public: Octet) -> Result<Octet> {
         // TODO validate input and see if it matches private
         self.public = public.clone();
         Ok(public)
     }
 
+    /// Set the private key
     pub fn set_private(&mut self, private: Octet) -> Result<Octet> {
         self.private = private.clone();
         self.generate_public()?;

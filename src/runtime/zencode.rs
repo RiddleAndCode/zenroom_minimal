@@ -2,6 +2,8 @@ use super::Runtime;
 use crate::{prelude::*, Importer, Json, ScenarioLoader, Zencode};
 use rlua::{Lua, Result};
 
+/// Execution environment to parse Zencode source and run
+/// the Zencode against scenarios, data and keys
 pub struct ZencodeRuntime {
     lua: Lua,
     data: String,
@@ -15,6 +17,8 @@ impl Default for ZencodeRuntime {
 }
 
 impl ZencodeRuntime {
+    /// Create a new [`ZencodeRuntime`] with a [`ScenarioLoader`] to load
+    /// scenarios requested from Zencode
     pub fn new<L>(loader: ScenarioLoader<L>) -> Self
     where
         L: 'static + ScenarioLinker + Sync + Send,
@@ -40,12 +44,14 @@ impl ZencodeRuntime {
         }
     }
 
+    /// Load data to be passed into `ZEN:run`
     pub fn load_data(&mut self, data: &str) -> Result<&mut Self> {
         // TODO validation
         self.data = data.to_owned();
         Ok(self)
     }
 
+    /// Load keys to be passed into `ZEN:run`
     pub fn load_keys(&mut self, keys: &str) -> Result<&mut Self> {
         // TODO validation
         self.keys = keys.to_owned();

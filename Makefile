@@ -6,6 +6,8 @@ DOCKERCMD :=
 TARGET := x86_64-unknown-linux-gnu
 
 SERVER_CMD := http-server
+WATCH_CMD := "make test"
+README := README.md
 
 all: build test
 
@@ -27,16 +29,30 @@ clean:
 
 .PHONY: watch
 watch:
-	@$(CARGO_BIN) watch -s "make test"
+	@$(CARGO_BIN) watch -i $(README) -s $(WATCH_CMD)
 
 .PHONY: bench
 bench:
 	@$(CARGO_BIN) bench --target=$(TARGET)
 
 .PHONY: bench-report
-bench-report:
+bench-serve:
 	$(SERVER_CMD) target/criterion
 
+.PHONY: doc
+doc: readme
+	$(CARGO_BIN) doc
+
+.PHONY: doc-view
+doc-serve:
+	$(SERVER_CMD) target/doc
+
+.PHONY: readme
+readme:
+	$(CARGO_BIN) readme > $(README)
+
+doc-watch: WATCH_CMD := "make doc"
+doc-watch: watch
 
 .PHONY: musl
 musl: TARGET := x86_64-unknown-linux-musl

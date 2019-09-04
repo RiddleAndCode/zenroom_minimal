@@ -1,6 +1,11 @@
 use super::{DefaultModule, Module};
 use rlua::{prelude::*, Context, Error, Result, Value};
 
+/// Json encoding and decoding for Lua values.
+///
+/// Exposes a `JSON` module in Lua as a default
+/// * `JSON.encode(<lua value>)`: Encodes a Lua Value as a JSON Lua String
+/// * `JSON.decode(<lua string>)`: Decodes a Lua String as a JSON Lua Value
 #[derive(Default)]
 pub struct Json;
 

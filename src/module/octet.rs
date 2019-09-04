@@ -2,13 +2,25 @@ use super::{DefaultModule, Module};
 use rlua::{prelude::*, Context, Error, Result, UserData, UserDataMethods, Value};
 use std::ops::{Deref, DerefMut};
 
+/// A Wrapper around a ByteString for use inside and outside of Lua
+///
+/// An Octet instance exposes some useful encoding / decoding methods
+/// * `octet:base64()`: encode the byte string as a url safe base64 string
+/// * `octet:string()`: encode the byte string as a utf-8 string
 #[derive(Clone, Debug, Default)]
 pub struct Octet(Vec<u8>);
 
+/// A [`Octet`] factory.
+///
+/// Exposes a default `OCTET` module which can generate octets in three ways
+/// * `OCTET.new()`: new empty octet
+/// * `OCTET.base64(<lua string>)`: new octet from url safe base64 string
+/// * `OCTET.string(<lua string>)`: new octet from utf-8 string
 #[derive(Default)]
 pub struct OctetClass;
 
 impl Octet {
+    /// Create new Octet from a byte vector
     pub fn new(bytes: Vec<u8>) -> Self {
         Octet(bytes)
     }

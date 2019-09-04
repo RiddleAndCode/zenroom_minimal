@@ -1,6 +1,9 @@
 use super::{DefaultModule, Json, KeyringClass, Module, OctetClass, Zencode};
 use rlua::{Context, Error, Result, Value};
 
+/// A module which imports another module by its [`Module::IDENTIFIER`].
+///
+/// Available under `import("module_name")` in Lua as default
 #[derive(Default)]
 pub struct Importer;
 

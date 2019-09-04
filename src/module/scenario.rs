@@ -3,14 +3,21 @@ use crate::util::read_file;
 use rlua::{Context, Error, Result, Value};
 use std::path::{Path, PathBuf};
 
+/// A trait to define how to load Lua code from an identifier
+/// to be used by the [`ScenarioLoader`]
 pub trait ScenarioLinker {
+    /// Define a method for converting an identifier to Lua source
     fn read_scenario(&self, scenario: &str) -> Result<String>;
 }
 
+/// [`ScenarioLinker`] which loads Lua source from a File relative to
+/// `cwd`. For example when given `"scenario"` the [`FileScenarioLinker`]
+/// tries to load a file with the name `./zencode_senario.lua`
 #[derive(Clone)]
 pub struct FileScenarioLinker(PathBuf);
 
 impl FileScenarioLinker {
+    /// Create a new [`FileScenarioLinker`] relative to `path`
     pub fn new<T: AsRef<Path>>(path: T) -> Self {
         // TODO vector of paths?
         FileScenarioLinker(path.as_ref().to_path_buf())
@@ -31,6 +38,11 @@ impl Default for FileScenarioLinker {
     }
 }
 
+/// A module which given a [`ScenarioLinker`] exposes a function
+/// `load_scenario` into the Lua VM which then after linking the
+/// Lua source returned, runs the source in a global scope.
+/// This allows the user to define custom environments in a sandboxed
+/// way. Similar to a `.bashrc` for a Lua VM.
 #[derive(Clone)]
 pub struct ScenarioLoader<L: ScenarioLinker>(L);
 
@@ -38,6 +50,8 @@ impl<L> ScenarioLoader<L>
 where
     L: ScenarioLinker,
 {
+    /// Create a new [`ScenarioLoader`] using the [`ScenarioLinker`] to load
+    /// requested Lua source
     pub fn new(ld: L) -> Self {
         ScenarioLoader(ld)
     }

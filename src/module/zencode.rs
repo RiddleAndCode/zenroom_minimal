@@ -1,6 +1,9 @@
 use super::{DefaultModule, Module};
 use rlua::{Context, Result, Value};
 
+/// Exposes a `ZEN` module for parsing and running Zencode.
+/// Take a look at [zencode-core](https://github.com/riddleandcode/zencode-core)
+/// for more information on how to parse and run Zencode
 #[derive(Default)]
 pub struct Zencode;
 

@@ -2,6 +2,9 @@ use super::Runtime;
 use crate::{prelude::*, Importer};
 use rlua::{Lua, Result, StdLib};
 
+/// The default runtime is a basic Lua environment, sandboxed without
+/// file system or some standard OS function access. The environment
+/// is preluded with the [`Importer`] module
 pub struct DefaultRuntime {
     lua: Lua,
     source: String,
@@ -23,6 +26,7 @@ impl Default for DefaultRuntime {
 }
 
 impl DefaultRuntime {
+    /// Create a new [`DefaultRuntime`]
     pub fn new(lua: Lua) -> Self {
         let runtime = DefaultRuntime {
             lua,
