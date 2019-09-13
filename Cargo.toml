@@ -1,7 +1,11 @@
 [package]
 name = "zenroom_minimal"
+description = "A minimal implementation of Zenroom"
 version = "0.1.0"
 authors = ["Julian Popescu <jpopesculian@gmail.com>"]
+license-file = "LICENSE"
+readme = "README.md"
+homepage = "https://github.com/RiddleAndCode/zenroom_minimal"
 edition = "2018"
 
 [dependencies]
