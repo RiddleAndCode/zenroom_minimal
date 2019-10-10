@@ -23,7 +23,7 @@ pub struct Keyring {
 /// Exposes a default `KEYRING` module in Lua
 /// * `KEYRING.new()`: Create a new default Keyring (blank)
 /// * `KEYRING.generated()`: Create a new Keyring and generate a private / public keypair
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct KeyringClass;
 
 impl Keyring {
@@ -140,8 +140,6 @@ impl UserData for Keyring {
 }
 
 impl Module for KeyringClass {
-    const IDENTIFIER: &'static str = "keyring";
-
     fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx.create_table()?;
         module.set("new", ctx.create_function(|_, ()| Ok(Keyring::new()))?)?;

@@ -80,8 +80,6 @@ impl<L> Module for ScenarioLoader<L>
 where
     L: 'static + ScenarioLinker + Sync + Send,
 {
-    const IDENTIFIER: &'static str = "load_scenario";
-
     fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let func = ctx.create_function(move |ctx, val| Ok(self.load_scenario(ctx, val)?))?;
         Ok(Value::Function(func))

@@ -49,6 +49,7 @@
 #![warn(missing_docs)]
 
 extern crate base64;
+extern crate hashbrown;
 extern crate ring;
 extern crate rlua;
 extern crate rlua_serde;
@@ -61,8 +62,8 @@ mod runtime;
 pub mod util;
 
 pub use module::{
-    DefaultModule, FileScenarioLinker, Importer, Json, Keyring, KeyringClass, Module, Octet,
-    OctetClass, ScenarioLinker, ScenarioLoader, Zencode,
+    DefaultModule, FileScenarioLinker, ImportableModule, Importer, Json, Keyring, KeyringClass,
+    Module, Octet, OctetClass, ScenarioLinker, ScenarioLoader, Zencode,
 };
 pub use runtime::{DefaultRuntime, ZencodeRuntime};
 
@@ -73,7 +74,7 @@ pub use rlua::Result;
 /// Useful traits for implementing the `zenroom_minimal` library
 pub mod prelude {
     pub use crate::module::ScenarioLinker;
-    pub use crate::module::{DefaultModule, Module};
+    pub use crate::module::{DefaultModule, ImportableModule, Module};
     pub use crate::runtime::Runtime;
 
     // TODO abstract away rlua public traits?

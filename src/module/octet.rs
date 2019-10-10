@@ -16,7 +16,7 @@ pub struct Octet(Vec<u8>);
 /// * `OCTET.new()`: new empty octet
 /// * `OCTET.base64(<lua string>)`: new octet from url safe base64 string
 /// * `OCTET.string(<lua string>)`: new octet from utf-8 string
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct OctetClass;
 
 impl Octet {
@@ -99,8 +99,6 @@ impl UserData for Octet {
 }
 
 impl Module for OctetClass {
-    const IDENTIFIER: &'static str = "octet";
-
     fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx.create_table()?;
         module.set("new", ctx.create_function(|_, ()| Ok(Octet::default()))?)?;

@@ -4,7 +4,7 @@ use rlua::{Context, Result, Value};
 /// Exposes a `ZEN` module for parsing and running Zencode.
 /// Take a look at [zencode-core](https://github.com/riddleandcode/zencode-core)
 /// for more information on how to parse and run Zencode
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Zencode;
 
 static ZENCODE_SRC: &str = include_str!(concat!(
@@ -13,8 +13,6 @@ static ZENCODE_SRC: &str = include_str!(concat!(
 ));
 
 impl Module for Zencode {
-    const IDENTIFIER: &'static str = "zencode";
-
     fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx
             .load(ZENCODE_SRC)

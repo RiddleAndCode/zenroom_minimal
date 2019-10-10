@@ -6,7 +6,7 @@ use rlua::{prelude::*, Context, Error, Result, Value};
 /// Exposes a `JSON` module in Lua as a default
 /// * `JSON.encode(<lua value>)`: Encodes a Lua Value as a JSON Lua String
 /// * `JSON.decode(<lua string>)`: Decodes a Lua String as a JSON Lua Value
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Json;
 
 impl Json {
@@ -33,8 +33,6 @@ impl Json {
 }
 
 impl Module for Json {
-    const IDENTIFIER: &'static str = "json";
-
     fn build_module<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         let module = ctx.create_table()?;
         module.set("encode", ctx.create_function(Json::encode)?)?;
