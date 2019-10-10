@@ -12,14 +12,14 @@ pub struct ZencodeRuntime {
 
 impl Default for ZencodeRuntime {
     fn default() -> Self {
-        ZencodeRuntime::new(ScenarioLoader::default())
+        ZencodeRuntime::new(ScenarioLoader::default(), Importer::with_default_modules())
     }
 }
 
 impl ZencodeRuntime {
     /// Create a new [`ZencodeRuntime`] with a [`ScenarioLoader`] to load
     /// scenarios requested from Zencode
-    pub fn new<L>(loader: ScenarioLoader<L>) -> Self
+    pub fn new<L>(loader: ScenarioLoader<L>, importer: Importer) -> Self
     where
         L: 'static + ScenarioLinker + Sync + Send,
     {
@@ -31,6 +31,9 @@ impl ZencodeRuntime {
                     ScenarioLoader::GLOBAL_VAR,
                     loader.build_module(ctx).unwrap(),
                 )
+                .unwrap();
+            ctx.globals()
+                .set(Importer::GLOBAL_VAR, importer.build_module(ctx).unwrap())
                 .unwrap();
             Zencode::import_module(ctx).unwrap();
             Json::import_module(ctx).unwrap();
@@ -113,7 +116,7 @@ mod tests {
     fn helloworld() {
         // TODO make this windows compatible
         let loader = ScenarioLoader::new(FileScenarioLinker::new("/tmp"));
-        let mut runtime = ZencodeRuntime::new(loader);
+        let mut runtime = ZencodeRuntime::new(loader, Importer::with_default_modules());
         let scenario = random_scenario(10);
         let filename = format!("/tmp/zencode_{}.lua", scenario);
         File::create(&filename)
@@ -157,7 +160,7 @@ And print all data
     fn addition() {
         // TODO make this windows compatible
         let loader = ScenarioLoader::new(FileScenarioLinker::new("/tmp"));
-        let mut runtime = ZencodeRuntime::new(loader);
+        let mut runtime = ZencodeRuntime::new(loader, Importer::with_default_modules());
         let scenario = random_scenario(10);
         let filename = format!("/tmp/zencode_{}.lua", scenario);
         File::create(&filename)
