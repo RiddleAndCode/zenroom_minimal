@@ -61,12 +61,12 @@ mod runtime;
 /// Utility functions
 pub mod util;
 
+pub use crate::util::{StaticToLua, StaticUserData};
 pub use module::{
     DefaultModule, FileScenarioLinker, ImportableModule, Importer, Json, Keyring, KeyringClass,
     Module, Octet, OctetClass, ScenarioLinker, ScenarioLoader, Zencode,
 };
 pub use runtime::{DefaultRuntime, ZencodeRuntime};
-pub use crate::util::StaticToLua;
 
 // TODO add own error types
 pub use rlua::Error;
@@ -77,7 +77,7 @@ pub mod prelude {
     pub use crate::module::ScenarioLinker;
     pub use crate::module::{DefaultModule, ImportableModule, Module};
     pub use crate::runtime::Runtime;
-    pub use crate::util::StaticToLua;
+    pub use crate::util::{StaticToLua, StaticUserData};
 
     // TODO abstract away rlua public traits?
     pub use rlua::prelude::*;
