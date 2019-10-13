@@ -6,8 +6,6 @@ use rlua::{Lua, Result};
 /// the Zencode against scenarios, data and keys
 pub struct ZencodeRuntime {
     lua: Lua,
-    data: String,
-    keys: String,
 }
 
 impl Default for ZencodeRuntime {
@@ -40,24 +38,28 @@ impl ZencodeRuntime {
             // TODO verbosity
             ctx.load("ZEN:begin(1)").exec().unwrap();
         });
-        ZencodeRuntime {
-            lua,
-            data: "{}".to_string(),
-            keys: "{}".to_string(),
-        }
+        ZencodeRuntime { lua }
     }
 
     /// Load data to be passed into `ZEN:run`
-    pub fn load_data(&mut self, data: &str) -> Result<&mut Self> {
+    pub fn load_data<T>(&mut self, data: T) -> Result<&mut Self>
+    where
+        T: StaticToLua,
+    {
         // TODO validation
-        self.data = data.to_owned();
+        self.lua
+            .context(|ctx| ctx.globals().set("_DATA", data.static_to_lua(ctx)?))?;
         Ok(self)
     }
 
     /// Load keys to be passed into `ZEN:run`
-    pub fn load_keys(&mut self, keys: &str) -> Result<&mut Self> {
+    pub fn load_keys<T>(&mut self, keys: T) -> Result<&mut Self>
+    where
+        T: StaticToLua,
+    {
         // TODO validation
-        self.keys = keys.to_owned();
+        self.lua
+            .context(|ctx| ctx.globals().set("_DATA", keys.static_to_lua(ctx)?))?;
         Ok(self)
     }
 }
@@ -79,14 +81,8 @@ ZEN:parse(script)
     }
 
     fn eval(&self) -> Result<Option<String>> {
-        // TODO encoding of data and keys
-        self.lua.context(|ctx| {
-            ctx.load(&format!(
-                "return JSON.encode(ZEN:run({}, {}))",
-                self.data, self.keys
-            ))
-            .eval()
-        })
+        self.lua
+            .context(|ctx| ctx.load("JSON.encode(ZEN:run(_DATA, _KEYS))").eval())
     }
 }
 
@@ -95,6 +91,7 @@ mod tests {
     use super::*;
     use crate::{FileScenarioLinker, ScenarioLoader};
     use rand::{prelude::*, thread_rng};
+    use std::collections::HashMap;
     use std::fs::{remove_file, File};
     use std::io::prelude::*;
 
@@ -184,7 +181,9 @@ end)
                 )
             })
             .unwrap();
-        let data = "{a = 1, b = 2}";
+        let mut data = HashMap::new();
+        data.insert("a".to_string(), 1);
+        data.insert("b".to_string(), 2);
         let res = runtime
             .load_data(data)
             .unwrap()

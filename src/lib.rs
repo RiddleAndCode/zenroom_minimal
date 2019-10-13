@@ -66,6 +66,7 @@ pub use module::{
     Module, Octet, OctetClass, ScenarioLinker, ScenarioLoader, Zencode,
 };
 pub use runtime::{DefaultRuntime, ZencodeRuntime};
+pub use crate::util::StaticToLua;
 
 // TODO add own error types
 pub use rlua::Error;
@@ -76,6 +77,7 @@ pub mod prelude {
     pub use crate::module::ScenarioLinker;
     pub use crate::module::{DefaultModule, ImportableModule, Module};
     pub use crate::runtime::Runtime;
+    pub use crate::util::StaticToLua;
 
     // TODO abstract away rlua public traits?
     pub use rlua::prelude::*;
