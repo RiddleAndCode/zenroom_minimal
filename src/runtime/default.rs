@@ -1,6 +1,6 @@
 use super::Runtime;
 use crate::{prelude::*, Importer};
-use rlua::{Lua, Result, StdLib};
+use rlua::{prelude::*, Context, Lua, Result, StdLib, Value};
 
 /// The default runtime is a basic Lua environment, sandboxed without
 /// file system or some standard OS function access. The environment
@@ -43,9 +43,17 @@ impl Runtime for DefaultRuntime {
         Ok(self)
     }
 
-    fn eval(&self) -> Result<Option<String>> {
-        self.lua
-            .context(|lua_ctx| lua_ctx.load(&self.source).eval::<Option<String>>())
+    fn eval<T>(&self) -> Result<T>
+    where
+        T: StaticFromLua,
+    {
+        // TODO make static_from_lua into a wrapper
+        self.lua.context(|lua_ctx| {
+            lua_ctx
+                .load(&self.source)
+                .eval::<Value>()
+                .and_then(|v| T::static_from_lua(v, lua_ctx))
+        })
     }
 }
 
@@ -56,7 +64,7 @@ mod tests {
     #[test]
     fn empty() {
         let mut runtime = DefaultRuntime::default();
-        let res = runtime.load("").unwrap().eval();
+        let res = runtime.load("").unwrap().eval::<Option<String>>();
         match res {
             Ok(None) => (),
             _ => panic!("empty script should return none"),
@@ -66,7 +74,10 @@ mod tests {
     #[test]
     fn require_fails() {
         let mut runtime = DefaultRuntime::default();
-        let res = runtime.load("return require").unwrap().eval();
+        let res = runtime
+            .load("return require")
+            .unwrap()
+            .eval::<Option<String>>();
         match res {
             Ok(None) => (),
             _ => panic!("require should be none"),
@@ -84,7 +95,7 @@ return JSON.encode({a = 1})
         "#,
             )
             .unwrap()
-            .eval()
+            .eval::<Option<String>>()
             .unwrap();
         assert_eq!(res, Some("{\"a\":1}".to_string()));
     }

@@ -1,6 +1,6 @@
 use super::Runtime;
 use crate::{prelude::*, Importer, Json, ScenarioLoader, Zencode};
-use rlua::{Lua, Result};
+use rlua::{prelude::*, Lua, Result, Value};
 
 /// Execution environment to parse Zencode source and run
 /// the Zencode against scenarios, data and keys
@@ -80,9 +80,16 @@ ZEN:parse(script)
         Ok(self)
     }
 
-    fn eval(&self) -> Result<Option<String>> {
-        self.lua
-            .context(|ctx| ctx.load("JSON.encode(ZEN:run(_DATA, _KEYS))").eval())
+    fn eval<T>(&self) -> Result<T>
+    where
+        T: StaticFromLua,
+    {
+        self.lua.context(|ctx| {
+            // TODO get rid of json encode and fix tests
+            ctx.load("JSON.encode(ZEN:run(_DATA, _KEYS))")
+                .eval::<Value>()
+                .and_then(|v| T::static_from_lua(v, ctx))
+        })
     }
 }
 

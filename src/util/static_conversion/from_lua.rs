@@ -4,6 +4,8 @@ use rlua::{prelude::*, Context, Error, LightUserData, Result, Value};
 use std::collections::HashMap;
 use std::ffi::CString;
 
+// TODO consider an IntoStatic trait or something or nother.... (see Vec<T> implementation for why)
+
 /// A slight reimplementation of [`FromLua`]. This was found to be necessary after seeing how
 /// difficult it was to pass in external data into a runtime. Therefore this trait doesn't have a
 /// reference to a `'lua` lifetime and can be used outside of a context until necessarily imported.

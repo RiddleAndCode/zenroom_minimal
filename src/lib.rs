@@ -77,7 +77,7 @@ pub mod prelude {
     pub use crate::module::ScenarioLinker;
     pub use crate::module::{DefaultModule, ImportableModule, Module};
     pub use crate::runtime::Runtime;
-    pub use crate::util::{StaticToLua, StaticUserData};
+    pub use crate::util::{StaticFromLua, StaticToLua, StaticUserData};
 
     // TODO abstract away rlua public traits?
     pub use rlua::prelude::*;
