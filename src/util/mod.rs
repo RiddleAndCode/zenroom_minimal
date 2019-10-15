@@ -1,5 +1,5 @@
 mod fs;
-mod static_to_lua;
+mod static_conversion;
 
 pub use fs::read_file;
-pub use static_to_lua::{StaticToLua, StaticUserData};
+pub use static_conversion::{StaticFromLua, StaticToLua, StaticUserData};

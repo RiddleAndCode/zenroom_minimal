@@ -1,11 +1,8 @@
+use super::StaticUserData;
 use core::hash::{BuildHasher, Hash};
-use rlua::{prelude::*, Context, Error, LightUserData, Result, UserData, Value};
+use rlua::{prelude::*, Context, Error, LightUserData, Result, Value};
 use std::collections::HashMap;
 use std::ffi::CString;
-
-/// A wrapper around UserData so that StaticToLua could be automatically implemented without
-/// conflicts
-pub trait StaticUserData: UserData {}
 
 /// A slight reimplementation of [`ToLua`]. This was found to be necessary after seeing how
 /// difficult it was to pass in external data into a runtime. Therefore this trait doesn't have a

@@ -61,7 +61,7 @@ mod runtime;
 /// Utility functions
 pub mod util;
 
-pub use crate::util::{StaticToLua, StaticUserData};
+pub use crate::util::{StaticFromLua, StaticToLua, StaticUserData};
 pub use module::{
     DefaultModule, FileScenarioLinker, ImportableModule, Importer, Json, Keyring, KeyringClass,
     Module, Octet, OctetClass, ScenarioLinker, ScenarioLoader, Zencode,
