@@ -1,6 +1,6 @@
 use super::Runtime;
 use crate::{prelude::*, Importer, Json, ScenarioLoader, Zencode};
-use rlua::{prelude::*, Lua, Result, Value};
+use rlua::{Lua, Result};
 
 /// Execution environment to parse Zencode source and run
 /// the Zencode against scenarios, data and keys
@@ -85,10 +85,9 @@ ZEN:parse(script)
         T: StaticFromLua,
     {
         self.lua.context(|ctx| {
-            // TODO get rid of json encode and fix tests
-            ctx.load("JSON.encode(ZEN:run(_DATA, _KEYS))")
-                .eval::<Value>()
-                .and_then(|v| T::static_from_lua(v, ctx))
+            ctx.load("ZEN:run(_DATA, _KEYS)")
+                .eval()
+                .map_static_from_lua(ctx)
         })
     }
 }
@@ -112,8 +111,8 @@ mod tests {
     #[test]
     fn empty() {
         let mut runtime = ZencodeRuntime::default();
-        let res = runtime.load("").unwrap().eval().unwrap();
-        assert_eq!(Some("{}".to_string()), res);
+        let res: HashMap<String, String> = runtime.load("").unwrap().eval().unwrap();
+        assert_eq!(HashMap::new(), res);
     }
 
     #[test]
@@ -156,7 +155,7 @@ And print all data
             .unwrap()
             .eval()
             .unwrap();
-        assert_eq!(Some("\"Hello, Julian!\"".to_string()), res);
+        assert_eq!(Some("Hello, Julian!".to_string()), res);
         remove_file(filename).unwrap();
     }
 

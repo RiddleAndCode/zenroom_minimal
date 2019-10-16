@@ -1,10 +1,8 @@
-use super::StaticUserData;
+use super::{MapStaticFromLua, StaticUserData};
 use core::hash::{BuildHasher, Hash};
 use rlua::{prelude::*, Context, Error, LightUserData, Result, Value};
 use std::collections::HashMap;
 use std::ffi::CString;
-
-// TODO consider an IntoStatic trait or something or nother.... (see Vec<T> implementation for why)
 
 /// A slight reimplementation of [`FromLua`]. This was found to be necessary after seeing how
 /// difficult it was to pass in external data into a runtime. Therefore this trait doesn't have a
@@ -19,6 +17,7 @@ impl<T> StaticFromLua for T
 where
     T: 'static + StaticUserData + Clone,
 {
+    #[inline]
     fn static_from_lua<'lua>(value: Value<'lua>, ctx: Context<'lua>) -> Result<Self> {
         T::from_lua(value, ctx)
     }
@@ -32,9 +31,7 @@ where
         if let Value::Table(table) = value {
             table
                 .sequence_values()
-                .map(|elem: Result<Value<'lua>>| {
-                    elem.and_then(|elem| T::static_from_lua(elem, ctx))
-                })
+                .map(|elem: Result<Value<'lua>>| elem.map_static_from_lua(ctx))
                 .collect()
         } else {
             Err(Error::FromLuaConversionError {
@@ -77,6 +74,7 @@ impl<T> StaticFromLua for Option<T>
 where
     T: StaticFromLua,
 {
+    #[inline]
     fn static_from_lua<'lua>(value: Value<'lua>, ctx: Context<'lua>) -> Result<Self> {
         match value {
             Value::Nil => Ok(None),
@@ -88,6 +86,7 @@ where
 macro_rules! convert_simple_from_lua {
     ($x:ty) => {
         impl StaticFromLua for $x {
+            #[inline]
             fn static_from_lua<'lua>(value: Value<'lua>, ctx: Context<'lua>) -> Result<Self> {
                 Self::from_lua(value, ctx)
             }

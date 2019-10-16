@@ -17,6 +17,7 @@ impl<T> StaticToLua for T
 where
     T: 'static + StaticUserData + Send,
 {
+    #[inline]
     fn static_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         self.to_lua(ctx)
     }
@@ -59,6 +60,7 @@ impl<T> StaticToLua for Option<T>
 where
     T: StaticToLua,
 {
+    #[inline]
     fn static_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
         match self {
             Some(val) => val.static_to_lua(ctx),
@@ -70,6 +72,7 @@ where
 macro_rules! convert_simple_to_lua {
     ($x:ty) => {
         impl StaticToLua for $x {
+            #[inline]
             fn static_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
                 self.to_lua(ctx)
             }

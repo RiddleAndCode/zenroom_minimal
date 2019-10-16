@@ -16,4 +16,5 @@ pub trait Runtime {
     fn eval<T>(&self) -> Result<T>
     where
         T: StaticFromLua;
+    // TODO include serde eval
 }

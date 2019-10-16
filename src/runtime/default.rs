@@ -1,6 +1,6 @@
 use super::Runtime;
 use crate::{prelude::*, Importer};
-use rlua::{prelude::*, Context, Lua, Result, StdLib, Value};
+use rlua::{Lua, Result, StdLib};
 
 /// The default runtime is a basic Lua environment, sandboxed without
 /// file system or some standard OS function access. The environment
@@ -47,12 +47,11 @@ impl Runtime for DefaultRuntime {
     where
         T: StaticFromLua,
     {
-        // TODO make static_from_lua into a wrapper
         self.lua.context(|lua_ctx| {
             lua_ctx
                 .load(&self.source)
-                .eval::<Value>()
-                .and_then(|v| T::static_from_lua(v, lua_ctx))
+                .eval()
+                .map_static_from_lua(lua_ctx)
         })
     }
 }
