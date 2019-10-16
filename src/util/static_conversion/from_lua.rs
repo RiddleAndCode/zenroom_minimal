@@ -83,6 +83,13 @@ where
     }
 }
 
+impl StaticFromLua for () {
+    #[inline]
+    fn static_from_lua<'lua>(_: Value<'lua>, _: Context<'lua>) -> Result<Self> {
+        Ok(())
+    }
+}
+
 macro_rules! convert_simple_from_lua {
     ($x:ty) => {
         impl StaticFromLua for $x {
