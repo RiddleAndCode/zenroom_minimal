@@ -1,5 +1,8 @@
 use super::{DefaultModule, Module, Octet};
-use ring::{rand, signature, signature::EcdsaKeyPair, signature::KeyPair};
+use ring::{
+    rand, signature,
+    signature::{EcdsaKeyPair, KeyPair, VerificationAlgorithm},
+};
 use rlua::{Context, Error, Result, UserData, UserDataMethods, Value, Variadic};
 
 /// A public / private Keypair. At the moment, this Keypair is only configured
@@ -50,7 +53,7 @@ impl Keyring {
     fn keypair(&self) -> Result<EcdsaKeyPair> {
         EcdsaKeyPair::from_pkcs8(
             &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
-            untrusted::Input::from(self.private.as_ref()),
+            self.private.as_ref(),
         )
         .map_err(|e| Error::RuntimeError(e.to_string()))
     }
@@ -65,7 +68,7 @@ impl Keyring {
         let rng = rand::SystemRandom::new();
         Ok(self
             .keypair()?
-            .sign(&rng, untrusted::Input::from(message.as_ref()))
+            .sign(&rng, message.as_ref())
             .unwrap()
             .as_ref()
             .to_vec()
@@ -74,13 +77,13 @@ impl Keyring {
 
     /// Verify the signature signed by the public key
     pub fn verify(&self, message: &Octet, signature: &Octet) -> bool {
-        signature::verify(
-            &signature::ECDSA_P256_SHA256_FIXED,
-            untrusted::Input::from(self.public.as_ref()),
-            untrusted::Input::from(message.as_ref()),
-            untrusted::Input::from(signature.as_ref()),
-        )
-        .is_ok()
+        signature::ECDSA_P256_SHA256_FIXED
+            .verify(
+                untrusted::Input::from(self.public.as_ref()),
+                untrusted::Input::from(message.as_ref()),
+                untrusted::Input::from(signature.as_ref()),
+            )
+            .is_ok()
     }
 
     /// Generate new private / public keypair
