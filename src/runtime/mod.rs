@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use rlua::prelude::*;
 
 mod default;
 mod zencode;
@@ -15,6 +15,6 @@ pub trait Runtime {
     /// Evaluate the loaded source code and return some output as a String
     fn eval<T>(&self) -> Result<T>
     where
-        T: StaticFromLua;
+        T: for<'lua> FromLua<'lua>;
     // TODO include serde eval
 }

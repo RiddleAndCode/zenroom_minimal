@@ -45,13 +45,12 @@ impl Runtime for DefaultRuntime {
 
     fn eval<T>(&self) -> Result<T>
     where
-        T: StaticFromLua,
+        T: for<'lua> FromLua<'lua>,
     {
-        self.lua.context(|lua_ctx| {
-            lua_ctx
-                .load(&self.source)
+        self.lua.context(|ctx| {
+            ctx.load(&self.source)
                 .eval()
-                .map_static_from_lua(lua_ctx)
+                .and_then(|value| T::from_lua(value, ctx))
         })
     }
 }

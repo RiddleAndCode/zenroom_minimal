@@ -1,6 +1,7 @@
 use super::Runtime;
 use crate::{prelude::*, Importer, Json, ScenarioLoader, Zencode};
 use rlua::{Lua, Result};
+use serde::Serialize;
 
 /// Execution environment to parse Zencode source and run
 /// the Zencode against scenarios, data and keys
@@ -44,22 +45,40 @@ impl ZencodeRuntime {
     /// Load data to be passed into `ZEN:run`
     pub fn load_data<T>(&mut self, data: T) -> Result<&mut Self>
     where
-        T: StaticToLua,
+        T: for<'lua> ToLua<'lua>,
     {
-        // TODO validation
         self.lua
-            .context(|ctx| ctx.globals().set("_DATA", data.static_to_lua(ctx)?))?;
+            .context(|ctx| ctx.globals().set("_DATA", data.to_lua(ctx)?))?;
+        Ok(self)
+    }
+
+    /// Serialize and load data to be passed into `ZEN:run`
+    pub fn load_serializable_data<T>(&mut self, data: T) -> Result<&mut Self>
+    where
+        T: Serialize,
+    {
+        self.lua
+            .context(|ctx| ctx.globals().set("_DATA", rlua_serde::to_value(ctx, data)?))?;
         Ok(self)
     }
 
     /// Load keys to be passed into `ZEN:run`
     pub fn load_keys<T>(&mut self, keys: T) -> Result<&mut Self>
     where
-        T: StaticToLua,
+        T: for<'lua> ToLua<'lua>,
     {
-        // TODO validation
         self.lua
-            .context(|ctx| ctx.globals().set("_DATA", keys.static_to_lua(ctx)?))?;
+            .context(|ctx| ctx.globals().set("_KEYS", keys.to_lua(ctx)?))?;
+        Ok(self)
+    }
+
+    /// Serialize and load keys to be passed into `ZEN:run`
+    pub fn load_serializable_keys<T>(&mut self, keys: T) -> Result<&mut Self>
+    where
+        T: Serialize,
+    {
+        self.lua
+            .context(|ctx| ctx.globals().set("_KEYS", rlua_serde::to_value(ctx, keys)?))?;
         Ok(self)
     }
 }
@@ -82,12 +101,12 @@ ZEN:parse(script)
 
     fn eval<T>(&self) -> Result<T>
     where
-        T: StaticFromLua,
+        T: for<'lua> FromLua<'lua>,
     {
         self.lua.context(|ctx| {
             ctx.load("ZEN:run(_DATA, _KEYS)")
                 .eval()
-                .map_static_from_lua(ctx)
+                .and_then(|value| T::from_lua(value, ctx))
         })
     }
 }
