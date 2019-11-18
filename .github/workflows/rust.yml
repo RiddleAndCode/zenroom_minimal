@@ -1,28 +1,34 @@
 name: Rust
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-
+   
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: true
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        target: x86_64-unknown-linux-musl
-        override: true
-    - uses: actions-rs/cargo@v1
-      with:
-        use-cross: true
-        command: build
-        args: --target x86_64-unknown-linux-musl
-    - uses: actions-rs/cargo@v1
-      with:
-        use-cross: true
-        command: test
-        args: --target x86_64-unknown-linux-musl
+
+    - name: Setup
+      run: |
+        sudo apt-get install musl-tools
+        rustup target add x86_64-unknown-linux-musl
+        rustup component add rustfmt
+  
+    - name: Check Format
+      run: cargo fmt -- --check
+      
+    - name: Build
+      run: make build
+
+    - name: Test
+      run: make test
+  
+    - name: Build musl
+      run: make musl
+  
+    - name: Test musl
+      run: make musl-test
