@@ -14,26 +14,8 @@ jobs:
 
     - name: Setup
       run: |
-        sudo apt-get install -y musl-tools
-        rustup target add x86_64-unknown-linux-musl
-        rustup component add rustfmt
         curl -fssl https://raw.githubusercontent.com/SconeDocs/SH/master/install_docker.sh | bash
         docker login -u diogorac -p ${{ secrets.dockerpat }}
-
-    - name: Check Format
-      run: cargo fmt -- --check
-
-    - name: Build
-      run: make build
-
-    - name: Test
-      run: make test
-
-    - name: Build musl
-      run: make musl
-
-    - name: Test musl
-      run: make musl-test
 
     - name: Docker
       run: make docker
