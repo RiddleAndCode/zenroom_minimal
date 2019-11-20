@@ -38,5 +38,8 @@ jobs:
     - name: Docker
       run: make docker
 
-    - name: Docker-scone
+    - name: Docker scone
+      run: make scone
+      
+    - name: Test scone
       run: make scone-run-sim
