@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
     - uses: actions/checkout@v1
@@ -39,4 +39,4 @@ jobs:
       run: make docker
 
     - name: Docker-scone
-      run: make scone-run-sim
+      run: make scone-run
