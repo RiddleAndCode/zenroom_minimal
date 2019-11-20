@@ -84,6 +84,11 @@ scone: docker
 scone-run: DOCKERTAG := $(DOCKERTAG)_scone
 scone-run: docker-run
 
+scone-run-sim: DOCKERTAG := $(DOCKERTAG)_scone
+scone-run-sim: DOCKERCMD := scone-cargo test --target=x86_64-scone-linux-musl
+scone-run-sim:
+	docker run --rm -e SCONE_MODE=sim $(DOCKERTAG) $(DOCKERCMD)
+
 scone-bench: DOCKERTAG := $(DOCKERTAG)_scone
 scone-bench: DOCKERCMD := scone-cargo bench --target=x86_64-scone-linux-musl
 scone-bench: docker-run
