@@ -1,11 +1,11 @@
 name: Rust
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
     - uses: actions/checkout@v1
@@ -14,24 +14,14 @@ jobs:
 
     - name: Setup
       run: |
-        sudo apt-get install musl-tools
-        rustup target add x86_64-unknown-linux-musl
-        rustup component add rustfmt
-
-    - name: Check Format
-      run: cargo fmt -- --check
-
-    - name: Build
-      run: make build
-
-    - name: Test
-      run: make test
-
-    - name: Build musl
-      run: make musl
-
-    - name: Test musl
-      run: make musl-test
+        curl -fssl https://raw.githubusercontent.com/SconeDocs/SH/master/install_docker.sh | bash
+        docker login -u diogorac -p ${{ secrets.dockerpat }}
 
     - name: Docker
       run: make docker
+
+    - name: Docker scone
+      run: make scone
+
+    - name: Test scone
+      run: make scone-run
