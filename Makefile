@@ -72,7 +72,7 @@ docker:
 
 .PHONY: docker-run
 docker-run:
-	docker run -it --rm --device=/dev/isgx $(DOCKERTAG) $(DOCKERCMD)
+	docker run --rm --device=/dev/isgx $(DOCKERTAG) $(DOCKERCMD)
 
 docker-bench: DOCKERCMD := cargo bench --target=x86_64-unknown-linux-musl
 docker-bench: docker-run

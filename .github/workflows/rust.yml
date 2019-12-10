@@ -1,0 +1,27 @@
+name: Rust
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: Setup
+      run: |
+        curl -fssl https://raw.githubusercontent.com/SconeDocs/SH/master/install_docker.sh | bash
+        docker login -u diogorac -p ${{ secrets.dockerpat }}
+
+    - name: Docker
+      run: make docker
+
+    - name: Docker scone
+      run: make scone
+
+    - name: Test scone
+      run: make scone-run
