@@ -86,14 +86,13 @@ impl ZencodeRuntime {
 impl Runtime for ZencodeRuntime {
     fn load(&mut self, source: &str) -> Result<&mut Self> {
         self.lua.context(|ctx| {
-            ctx.load(&format!(
+            ctx.globals().set("_SCRIPT", source.to_string())?;
+            ctx.load(
                 r#"
 ZEN:reset()
-script = [[{}]]
-ZEN:parse(script)
+ZEN:parse(_SCRIPT)
             "#,
-                source
-            ))
+            )
             .exec()
         })?;
         Ok(self)
